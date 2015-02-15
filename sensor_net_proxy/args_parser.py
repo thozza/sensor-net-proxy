@@ -25,7 +25,7 @@ class ArgsParser(object):
 
     def __init__(self, args=None):
         """ parse arguments """
-        self.parser = argparse.ArgumentParser(description='Simple sensors network <-> sensor_net_proxy proxy',
+        self.parser = argparse.ArgumentParser(description='Simple sensors network <-> controller proxy',
                                               formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         self.add_args()
         self.args = self.parser.parse_args(args)
@@ -51,10 +51,11 @@ class ArgsParser(object):
             help='Port on which to listen'
         )
         self.parser.add_argument(
-            '--dynamic-discovery',
+            '--no-dynamic-discovery',
             default=True,
-            action='store_true',
-            help='Whether to turn on dynamic discovery (means listening also on interface subnet broadcast address)'
+            action='store_false',
+            dest='dynamic_discovery',
+            help='Whether to turn off dynamic discovery (means listening also on interface subnet broadcast address)'
         )
 
     def __getattr__(self, name):
