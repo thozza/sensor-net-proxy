@@ -22,6 +22,7 @@ import select
 
 from sensor_net_proxy.logger import logger, LoggerHelper, logging
 from sensor_net_proxy.my_sensors import MySensorsEthernetProxy
+from sensor_net_proxy.zmq_proxy import ZmqProxy
 
 
 class Application(object):
@@ -62,17 +63,21 @@ class Application(object):
     def run(self):
         logger.info('Sensor Net Proxy staring')
 
-        proxy = MySensorsEthernetProxy(self._conf.interface, self._conf.port, self._conf.dynamic_discovery)
+        mysensors_proxy = MySensorsEthernetProxy(self._conf.interface, self._conf.port, self._conf.dynamic_discovery)
+        zmq_proxy = ZmqProxy()
+
         try:
-            sockets = proxy.get_sockets()
+            sockets = mysensors_proxy.get_sockets()
 
             while True:
                 ready_r, ready_w, _ = select.select(sockets, [], [])
                 for s in ready_r:
-                    if proxy.is_socket_broadcast(s):
-                        proxy.handle_dynamic_discovery(s)
+                    if mysensors_proxy.is_socket_broadcast(s):
+                        mysensors_proxy.handle_dynamic_discovery(s)
                     else:
-                        msg, client = proxy.handle_incoming_msg(s)
+                        msg, client = mysensors_proxy.handle_incoming_msg(s)
+                        zmq_proxy.publish(msg)
         finally:
-            proxy.close_sockets()
+            mysensors_proxy.close_sockets()
+            zmq_proxy.close_sockets()
 
