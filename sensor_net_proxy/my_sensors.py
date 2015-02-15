@@ -287,7 +287,7 @@ class MySensorsMsg(object):
         self.message_type = int(message_type)
         self.ack = int(ack)
         self.sub_type = int(sub_type)
-        self.payload = payload
+        self.payload = payload.decode()
 
     def to_serial_msg(self):
         """
