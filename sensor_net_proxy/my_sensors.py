@@ -57,20 +57,24 @@ class MySensorsEthernetProxy(object):
         """
         logger.debug("Creating listening sockets interface '{0}'".format(self._interface))
         # go through IPv4 addresses only
-        for addrs in netifaces.ifaddresses(self._interface)[netifaces.AF_INET]:
-            logger.debug("Interface addresses '{0}'".format(addrs))
-            listen_sock = MySensorsEthernetProxy.create_listening_udp_socket(addrs['addr'], self._port)
-            self._listen_sockets.append(listen_sock)
+        try:
+            for addrs in netifaces.ifaddresses(self._interface)[netifaces.AF_INET]:
+                logger.debug("Interface addresses '{0}'".format(addrs))
+                listen_sock = MySensorsEthernetProxy.create_listening_udp_socket(addrs['addr'], self._port)
+                self._listen_sockets.append(listen_sock)
 
-            if self._dynamic_discovery:
-                try:
-                    self._listen_brcast_sockets.append(MySensorsEthernetProxy.create_listening_udp_socket(
-                        addrs['broadcast'], self._port))
-                    # mapping of broadcast address to the listening address
-                    self._bcast_addr_to_listen_addr[addrs['broadcast']] = (addrs['addr'], listen_sock)
-                except KeyError:
-                    raise SensorNetProxyError("Using dynamic discovery, but the selected interface does not support"
-                                              "broadcast!")
+                if self._dynamic_discovery:
+                    try:
+                        self._listen_brcast_sockets.append(MySensorsEthernetProxy.create_listening_udp_socket(
+                            addrs['broadcast'], self._port))
+                        # mapping of broadcast address to the listening address
+                        self._bcast_addr_to_listen_addr[addrs['broadcast']] = (addrs['addr'], listen_sock)
+                    except KeyError:
+                        raise SensorNetProxyError("Using dynamic discovery, but the selected interface does not support"
+                                                  "broadcast!")
+        except KeyError:
+            raise SensorNetProxyError("The selected interface '{0}' does not have any "
+                                      "IPv4 address".format(self._interface))
 
     @staticmethod
     def create_listening_udp_socket(address, port):
