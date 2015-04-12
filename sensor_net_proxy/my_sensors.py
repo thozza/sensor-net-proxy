@@ -41,7 +41,7 @@ class MySensorsEthernetProxy(object):
         self._ethernet_gateways_addresses = []
         self._bcast_addr_to_listen_addr = {}
         self._interface = interface
-        self._port = port
+        self._port = int(port)
         self._dynamic_discovery = dynamic_discovery
 
         if interface not in netifaces.interfaces():
